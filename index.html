@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    #title {
+      text-align: center;
+      font-size: 3em;
+    }
+
+    svg {
+      display: block;
+      margin: 0 auto;
+    }
+
+    .container {
+      position: relative;
+    }
+
+    
+    .info {
+      fill: red;
+      position: absolute;
+      background-color: aliceblue;
+      padding: 1em;
+    }
+    
+  </style>
+</head>
+
+<body>
+  <div class="container"></div>
+  <script src="./gdp.js"></script>
+  <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    data = data.data;
+    let text = "Gross Domestic Product"
+    for (let i = 0; i < data.length; i++) {
+      let d = new Date(data[i][0])
+      data[i]['date'] = d
+    }
+
+    let dateStr = data.map(d => {
+      let arr = d[0].split('-')
+      let m = arr[1]
+      let qtr = Math.floor((+m) / 3) + 1
+      return arr[0] + ' Q' + qtr
+
+    })
+    
+    const p = 50, w = 1000 - 2 * p, h = 500 - 2 * p;
+
+    
+    let dollarUSLocale = Intl.NumberFormat('en-US', {
+      style: "currency",
+      currency: "USD",
+    });
+
+    const xScale = d3.scaleTime()
+      .domain([d3.min(data.map(d => d.date)), d3.max(data.map(d => d.date))])
+      .range([0, w])
+
+    const yScale = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d[1])])
+      .range([h, 0])
+
+    //定义x轴
+    var xAxis = d3.axisBottom(xScale)
+
+    //定义y轴
+    var yAxis = d3.axisLeft(yScale)
+
+
+    d3.select('.container')
+      .append('div')
+      .attr('id', 'title')
+      .text('United States GDP')
+
+    const svg = d3.select('.container')
+      .append('svg')
+      .attr('width', w + 2 * p)
+      .attr('height', h + 2 * p)
+      .append('g')
+      .attr('width', w)
+      .attr('height', h)
+      .attr('transform', `translate(${p}, ${p})`)
+
+    //定义提示框
+    let info = d3.select('.container')
+      .append('div')
+      .attr('class', 'info')
+      .attr('id', 'tooltip')
+
+
+
+    //添加x轴
+    svg.append("g")
+      .attr('id', 'x-axis')
+      .attr("transform", `translate(0, ${h})`)
+      .call(xAxis);
+
+    //添加y轴
+    svg.append("g")
+      .attr('id', 'y-axis')
+      .call(yAxis);
+
+    svg.append('text')
+      .text(text)
+      .attr('dy', 30)
+      .attr('dx', -250)
+      .attr('transform', `rotate(270)`)
+      .style('font-size', '20px')
+
+
+    svg
+      .selectAll('rect')
+      .data(data)
+      .enter()
+      .append('rect')
+      .attr('class', 'bar')
+      .attr('data-date', d => d[0])
+      .attr('data-gdp', d => d[1])
+      .attr('index', (d, i) => i)
+      .attr('x', (d, i) => xScale(d.date))
+      .attr('y', (d, i) => yScale(d[1]))
+      .attr('height', (d, i) => h - yScale(d[1]))
+      .attr('width', 5)
+      .attr('fill', 'steelblue')
+      .on('mouseover', function (e, d) {
+
+        let dataDom = d3.select(this)
+          .attr('fill', 'white')
+        let x = +dataDom.attr('x')
+        let i = +dataDom.attr('index')
+        let gdp = dollarUSLocale.format(+dataDom.attr('data-gdp'))
+        let text = dateStr[i] + '<br />' + gdp + ' Billion'
+        info.style('opacity', '90%')
+        .style('left', (x + 100 + p + p) + 'px')
+          .style('top', h + 'px')
+          .attr('data-date', dataDom.attr('data-date'))
+          .html(text)
+      })
+      .on('mouseout', function () {
+        d3.select(this)
+          .attr('fill', 'steelblue')
+        info.style('opacity', '0')
+      })
+
+  </script>
+</body>
+
+</html>
