@@ -13,12 +13,13 @@
     }
 
     svg {
-      display: block;
+      /* display: block; */
       margin: 0 auto;
     }
 
     .container {
       position: relative;
+      text-align: center;
     }
 
     
@@ -27,6 +28,10 @@
       position: absolute;
       background-color: aliceblue;
       padding: 1em;
+    }
+
+    #tooltip {
+      opacity: 0%;
     }
     
   </style>
@@ -45,6 +50,7 @@
       data[i]['date'] = d
     }
 
+    //创建表示季度的字符串，用来提示信息
     let dateStr = data.map(d => {
       let arr = d[0].split('-')
       let m = arr[1]
